@@ -7,7 +7,7 @@ function newStep(){
 	let div = document.createElement("div");
 	div.innerHTML = `<div id="div_step` + steps + `" style="display: flex;">
 	<div class="square" style="background-color: #F04747;"></div>
-	<textarea id="step` + steps + `" oninput="results(this)" placeholder="Step ` + (steps + 1) + `" style="border-radius: 0px;"></textarea>
+	<textarea id="step` + steps + `" oninput="results()" placeholder="Step ` + (steps + 1) + `" style="border-radius: 0px;"></textarea>
 </div>`;
 	document.getElementById("steps").appendChild(div);
 }
