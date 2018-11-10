@@ -1,5 +1,8 @@
+@import url('https://fonts.googleapis.com/css?family=Roboto');
+
 body {
-	background-color: #36393F	
+	background-color: #36393F;
+	font-family: "Roboto";
 }
 
 .container {
