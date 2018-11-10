@@ -7,7 +7,7 @@ function newStep(){
 	let div = document.createElement("div");
 	div.innerHTML = `<div id="div_step` + steps + `" style="display: flex;">
 	<div class="square" style="background-color: #F04747;"></div>
-	<textarea id="step` + steps + `" oninput="results()" placeholder="Step ` + (steps + 1) + `" style="border-radius: 0px;"></textarea>
+	<textarea id="step` + steps + `" oninput="results(this)" placeholder="Step ` + (steps + 1) + `" style="border-radius: 0px;"></textarea>
 </div>`;
 	document.getElementById("steps").appendChild(div);
 }
@@ -18,6 +18,10 @@ function remStep(){
 	var div = document.getElementById("div_step" + steps);
 	div.parentNode.removeChild(div);
 	steps--;
+}
+
+function normalizeText(e){
+	return e.replace(/[\-|]/g, "\\$&").replace(/\\/g, "\\\\");
 }
 
 function results(){
@@ -48,10 +52,10 @@ function results(){
 					result.value = "";
 					return;
 				}
-			values.push(val);
+			values.push(normalizeText(val));
 		}
 
-		result.value = "!bug " + v_description + "|" + values.join("-") + "|" + v_expected + "|" + v_bug;
+		result.value = "bug " + normalizeText(v_description) + "|" + values.join("-") + "|" + normalizeText(v_expected) + "|" + normalizeText(v_bug);
 	}
 	else
 		result.value = "";
