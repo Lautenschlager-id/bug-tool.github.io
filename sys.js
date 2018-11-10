@@ -55,7 +55,7 @@ function results(){
 			values.push(normalizeText(val));
 		}
 
-		result.value = "bug " + normalizeText(v_description) + "|" + values.join("-") + "|" + normalizeText(v_expected) + "|" + normalizeText(v_bug);
+		result.value = "bug " + normalizeText(v_description) + " | " + values.join("-") + " | " + normalizeText(v_expected) + " | " + normalizeText(v_bug);
 	}
 	else
 		result.value = "";
