@@ -1,71 +1,71 @@
-var steps = 0;
-
-function newStep(){
-	if (steps > 8) return;
-	steps++;
-
-	let div = document.createElement("div");
-	div.innerHTML = `<div id="div_step` + steps + `" style="display: flex;">
-	<div class="square" style="background-color: #F04747;"></div>
-	<textarea id="step` + steps + `" oninput="results()" placeholder="Step ` + (steps + 1) + `" style="border-radius: 0px;"></textarea>
-</div>`;
-	document.getElementById("steps").appendChild(div);
+function normalize(t) {
+	return t.replace(/"/g, "\\\"").replace(/'/g, "\\'").replace(/\r/g, "\\r").replace(/\n/g, "\\n");
 }
 
-function remStep(){
-	if (steps == 0) return;
+function contentChanged(){
+	var pattern = document.getElementById("pattern");
+	var content = document.getElementById("content");
+	var match = document.getElementById("matched");
+	var counter = document.getElementById("counter");
 
-	var div = document.getElementById("div_step" + steps);
-	div.parentNode.removeChild(div);
-	steps--;
-}
-
-function normalizeText(e){
-	return e.replace(/[\-|]/g, "\\$&").replace(/\\/g, "\\\\");
-}
-
-function results(){
-	var description = document.getElementById("description");
-	var expected = document.getElementById("expected");
-	var bug = document.getElementById("bug");
-	var result = document.getElementById("result");
-
-	document.getElementById("copy").innerHTML = "Copy to clipboard";
-
-	var v_description = description.value.trim();
-	var v_expected = expected.value.trim();
-	var v_bug = bug.value.trim();
-	if (v_description !== "" && v_expected !== "" && v_bug !== "")
+	try
 	{
-		let values = [];
+		var lua = fengari.load(`
+local str = "` + normalize(content.value) + `"
+local pattern = "` + normalize(pattern.value) + `"
 
-		for (let e = 0; e <= steps; e++)
+local matches, counter = { }, 0
+
+local i, e = 1, 0
+local last_i, last_e = 0, 0
+
+local len, f = #str
+
+while true do
+    counter = counter + 1
+    f = len - (len - last_e)
+    i, e = string.find(string.sub(str, f + 1), pattern)
+    if not i or not e or e == last_e then
+        break
+    end
+
+    last_i, last_e = f + i, f + e
+    matches[counter] = { last_i, last_e, (string.sub(str, last_i, last_e)) }
+end
+
+return { len = counter - 1, matches = matches }
+`)();
+		let obj, len = lua.get("len");
+		if (len == 0)
+			throw null;
+
+		var tbl = "<table>";
+		for (let index = 1; index <= len; index++)
 		{
-			let val = document.getElementById("step" + e).value.trim();
-			if (val === "")
-				if (e == steps && e > 0){
-					remStep();
-					break;
-				}
-				else
-				{
-					result.value = "";
-					return;
-				}
-			values.push(normalizeText(val));
-		}
+			obj = lua.get("matches").get(index);
+			obj = "<tr><th><i>[" + obj.get(1) + ":" + obj.get(2) + "]</i></th><th>" + obj.get(3) + "</th></tr>";
 
-		result.value = "bug " + normalizeText(v_description) + " | " + values.join("-") + " | " + normalizeText(v_expected) + " | " + normalizeText(v_bug);
+			tbl += obj;
+		}
+		tbl += "</table>"
+
+		match.innerHTML = tbl.replace(/</g, "&lt;");
+		autosize(match);
+		
+		counter.innerHTML = "* " + len + " matches found";
 	}
-	else
-		result.value = "";
+	catch(_)
+	{
+		counter.innerHTML = match.innerHTML = "";
+	}
 }
 
-function copy(){
-	let result = document.getElementById("result");
-	if (result.value == "") return;
+function autosize(textarea){
+	textarea.style.height = "auto";
+	
+	var height = textarea.scrollHeight - 5;
+	if (height > 300)
+		textarea.style.overflow = "auto";
 
-	result.select();
-	document.execCommand("copy");
-	document.getElementById("copy").innerHTML = "Copied";
+	textarea.style.height = Math.min(300, height) + "px";
 }
